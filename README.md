@@ -13,6 +13,17 @@ bun run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Role-based links (for job applications)
+
+Use a dedicated URL per role so recruiters see tailored copy. The hero and About section change by role.
+
+- **Default**: `yoursite.com` — general portfolio
+- **Marketing Manager**: `yoursite.com/p/marketing-manager`
+- **Product Manager**: `yoursite.com/p/product-manager`
+- **Operations**: `yoursite.com/p/operations`
+
+Add or edit roles in `src/data/roles.ts` (slug, label, headline, summary, aboutSummary). Unknown slugs 404.
+
 ## Contact form & scheduling
 
 - **Contact form**: Add `RESEND_API_KEY` (and optionally `CONTACT_EMAIL`) to send form submissions to your email via [Resend](https://resend.com). Copy `.env.example` to `.env` and fill in values.

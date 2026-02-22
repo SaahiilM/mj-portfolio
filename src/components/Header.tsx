@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "#about", label: "About" },
@@ -26,30 +27,36 @@ export function Header({ basePath = "" }: HeaderProps) {
         >
           MJ
         </Link>
-        <nav className="hidden sm:flex sm:gap-6">
-          {NAV_LINKS.map(({ href, label }) => (
-            <a
-              key={href}
-              href={prefix + href}
-              className="text-sm font-medium text-muted transition-colors hover:text-foreground"
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-        <button
-          type="button"
-          className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-md text-muted hover:text-foreground"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          aria-label="Toggle menu"
-        >
-          {open ? (
-            <span className="text-xl">×</span>
-          ) : (
-            <span className="text-xl">☰</span>
-          )}
-        </button>
+        <div className="hidden items-center gap-4 sm:flex">
+          <nav className="flex gap-6">
+            {NAV_LINKS.map(({ href, label }) => (
+              <a
+                key={href}
+                href={prefix + href}
+                className="text-sm font-medium text-muted transition-colors hover:text-foreground"
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+          <ThemeToggle />
+        </div>
+        <div className="flex items-center gap-2 sm:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted hover:text-foreground"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-label="Toggle menu"
+          >
+            {open ? (
+              <span className="text-xl">×</span>
+            ) : (
+              <span className="text-xl">☰</span>
+            )}
+          </button>
+        </div>
       </div>
       {open && (
         <nav className="sm:hidden border-t border-border px-4 py-4">

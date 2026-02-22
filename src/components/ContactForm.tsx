@@ -4,6 +4,15 @@ import { useState } from "react";
 
 type Status = "idle" | "sending" | "success" | "error";
 
+const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "mj29@fordham.edu";
+const CONTACT_SERVICE_URL = process.env.NEXT_PUBLIC_CONTACT_SERVICE_URL;
+
+function buildMailtoUrl(name: string, email: string, message: string) {
+  const subject = encodeURIComponent(`Portfolio message from ${name}`);
+  const body = encodeURIComponent(`From: ${name} <${email}>\n\n${message}`);
+  return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+}
+
 export function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -12,31 +21,51 @@ export function ContactForm() {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
+
+    const name = String(data.get("name") ?? "").trim();
+    const email = String(data.get("email") ?? "").trim();
+    const message = String(data.get("message") ?? "").trim();
+
+    if (!name || !email || !message) {
+      setStatus("error");
+      setErrorMessage("Name, email, and message are required.");
+      return;
+    }
+
     setStatus("sending");
     setErrorMessage("");
 
+    const fallbackMailto = () => {
+      window.location.href = buildMailtoUrl(name, email, message);
+      setStatus("success");
+      form.reset();
+    };
+
+    if (!CONTACT_SERVICE_URL) {
+      fallbackMailto();
+      return;
+    }
+
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch(CONTACT_SERVICE_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          name: data.get("name"),
-          email: data.get("email"),
-          message: data.get("message"),
+          name,
+          email,
+          message,
         }),
       });
-      const json = await res.json();
 
       if (!res.ok) {
-        setStatus("error");
-        setErrorMessage(json.message ?? "Something went wrong.");
+        fallbackMailto();
         return;
       }
+
       setStatus("success");
       form.reset();
     } catch {
-      setStatus("error");
-      setErrorMessage("Network error. Please try again.");
+      fallbackMailto();
     }
   }
 
@@ -99,6 +128,9 @@ export function ContactForm() {
       >
         {status === "sending" ? "Sending…" : "Send message"}
       </button>
+      <p className="text-xs text-muted">
+        If form delivery is unavailable, this will open your email app as a fallback.
+      </p>
     </form>
   );
 }

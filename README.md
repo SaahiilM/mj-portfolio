@@ -24,16 +24,27 @@ Use a dedicated URL per role so recruiters see tailored copy. The hero and About
 
 Add or edit roles in `src/data/roles.ts` (slug, label, headline, summary, aboutSummary). Unknown slugs 404.
 
-## Contact form & scheduling
+## Contact form (GitHub Pages compatible)
 
-- **Contact form**: Add `RESEND_API_KEY` (and optionally `CONTACT_EMAIL`) to send form submissions to your email via [Resend](https://resend.com). Copy `.env.example` to `.env` and fill in values.
-- **Schedule a chat**: Set `NEXT_PUBLIC_CALENDLY_URL` to your Calendly (or similar) link so the “Schedule a chat” button points there.
+This project is configured for static export so it can deploy to GitHub Pages.
 
-## Build & deploy
+- Set `NEXT_PUBLIC_CONTACT_SERVICE_URL` to a form/email endpoint that accepts JSON `POST` payloads (`name`, `email`, `message`) and responds with a 2xx status on success.
+- Optional: set `NEXT_PUBLIC_CONTACT_EMAIL` to control the fallback destination.
+- If the external service is missing or fails, the form falls back to opening a `mailto:` draft in the visitor's email app.
+
+## Schedule a chat
+
+Set `NEXT_PUBLIC_CALENDLY_URL` to your Calendly (or similar) link so the “Schedule a chat” button points there.
+
+## Theme
+
+- Built-in dark mode toggle in the header.
+- Preference is saved in `localStorage` and defaults to the system color scheme.
+
+## Build & deploy (GitHub Pages)
 
 ```bash
 bun run build
-bun run start
 ```
 
-Deploy to Vercel, Netlify, or any Node/Bun-compatible host. Set the env vars in the dashboard for contact and scheduling.
+Next.js generates static files in `out/` (via `output: "export"`). Publish that directory to GitHub Pages (for example with a GitHub Actions workflow).

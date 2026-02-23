@@ -1,23 +1,25 @@
 @import "tailwindcss";
 
+/* Light: confident, document-like — warm paper, one clear accent for CTAs and key info */
 :root {
-  --background: #faf9f7;
-  --foreground: #1c1917;
-  --muted: #57534e;
-  --accent: #0d9488;
-  --accent-hover: #0f766e;
+  --background: #f7f6f4;
+  --foreground: #1c1b19;
+  --muted: #5c5a57;
+  --accent: #0b7285;
+  --accent-hover: #0c5c6b;
   --card: #ffffff;
-  --border: #e7e5e4;
+  --border: #e4e2df;
 }
 
+/* Dark: easy on the eyes, warm dark — same accent so it reads professional and focused */
 :root[data-theme="dark"] {
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #2dd4bf;
-  --accent-hover: #14b8a6;
-  --card: #111827;
-  --border: #334155;
+  --background: #1a1d21;
+  --foreground: #e8e6e3;
+  --muted: #9ca3a8;
+  --accent: #22b8cf;
+  --accent-hover: #38d1e8;
+  --card: #22262b;
+  --border: #3b4046;
 }
 
 @theme inline {

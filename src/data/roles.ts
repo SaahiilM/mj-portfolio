@@ -14,7 +14,7 @@ export type RoleProfile = {
 };
 
 const DEFAULT: Omit<RoleProfile, "slug" | "label"> = {
-  badge: "MBA Candidate · Graduating May 2025",
+  badge: "MBA Candidate · Graduating May 2026",
   headline:
     "Marketing & Operations professional focused on reporting, documentation, and process improvement. Data-driven, detail-oriented, and ready to contribute from day one.",
   summary:
@@ -36,7 +36,7 @@ const ROLE_OVERRIDES: Record<string, Partial<RoleProfile>> = {
       "Risk Awareness",
     ],
     projectOrder: ["plant-pal"],
-    badge: "Applying for Marketing Manager · Graduating May 2025",
+    badge: "Applying for Marketing Manager · Graduating May 2026",
     headline:
       "Marketing professional with hands-on experience in brand marketing, campaign analytics, and client reporting. Skilled in data-backed decisions and cross-functional coordination.",
     summary:
@@ -58,7 +58,7 @@ const ROLE_OVERRIDES: Record<string, Partial<RoleProfile>> = {
       "Google Analytics",
     ],
     projectOrder: ["plant-pal"],
-    badge: "Applying for Product Manager · Graduating May 2025",
+    badge: "Applying for Product Manager · Graduating May 2026",
     headline:
       "Data-driven professional with experience in market analysis, stakeholder coordination, and process improvement. MBA in Marketing & Information Systems.",
     summary:
@@ -80,7 +80,7 @@ const ROLE_OVERRIDES: Record<string, Partial<RoleProfile>> = {
       "Google Analytics",
     ],
     projectOrder: ["plant-pal"],
-    badge: "Applying for Operations · Graduating May 2025",
+    badge: "Applying for Operations · Graduating May 2026",
     headline:
       "Operations-minded professional with a focus on process improvement, documentation, and quality control. Experience in reporting, compliance, and vendor coordination.",
     summary:

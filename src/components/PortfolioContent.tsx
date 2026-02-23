@@ -88,7 +88,7 @@ export function PortfolioContent({
             </a>
           </div>
           <p className="mt-4 text-center text-xs text-muted">
-            New York, NY · Graduating May 2025
+            New York, NY · Graduating May 2026
           </p>
         </div>
       </footer>

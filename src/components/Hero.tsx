@@ -5,7 +5,7 @@ type HeroProps = {
   basePath?: string;
 };
 
-const DEFAULT_BADGE = "MBA Candidate · Graduating May 2025";
+const DEFAULT_BADGE = "MBA Candidate · Graduating May 2026";
 const DEFAULT_HEADLINE =
   "Marketing & Operations professional focused on reporting, documentation, and process improvement. Data-driven, detail-oriented, and ready to contribute from day one.";
 

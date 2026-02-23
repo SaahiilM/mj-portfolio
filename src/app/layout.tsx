@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Maitreyee Jaiswal | MBA Candidate, Marketing & Operations",
   description:
-    "Detail-oriented MBA candidate with experience in reporting, documentation, and process-driven initiatives across marketing and operations. Open to roles starting May 2025.",
+    "Detail-oriented MBA candidate with experience in reporting, documentation, and process-driven initiatives across marketing and operations. Open to roles starting May 2026.",
   openGraph: {
     title: "Maitreyee Jaiswal | MBA Candidate",
-    description: "Marketing & Operations professional. Graduating May 2025.",
+    description: "Marketing & Operations professional. Graduating May 2026.",
   },
 };
 

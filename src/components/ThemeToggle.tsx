@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 
-function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+function getThemeFromClient(): Theme {
   const stored = window.localStorage.getItem("theme");
   if (stored === "light" || stored === "dark") return stored;
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -17,11 +16,20 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
+  // Always start with "light" so server and first client render match (avoids hydration mismatch)
+  const [theme, setTheme] = useState<Theme>("light");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    const initial = getThemeFromClient();
+    setTheme(initial);
+    applyTheme(initial);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) applyTheme(theme);
+  }, [theme, mounted]);
 
   function toggleTheme() {
     const nextTheme = theme === "dark" ? "light" : "dark";

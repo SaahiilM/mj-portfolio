@@ -5,7 +5,9 @@ import { useState } from "react";
 type Status = "idle" | "sending" | "success" | "error";
 
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "mj29@fordham.edu";
-const CONTACT_SERVICE_URL = process.env.NEXT_PUBLIC_CONTACT_SERVICE_URL;
+// Use Resend API route when no external service URL is set
+const CONTACT_SERVICE_URL =
+  process.env.NEXT_PUBLIC_CONTACT_SERVICE_URL ?? "/api/contact";
 
 function buildMailtoUrl(name: string, email: string, message: string) {
   const subject = encodeURIComponent(`Portfolio message from ${name}`);
@@ -40,11 +42,6 @@ export function ContactForm() {
       setStatus("success");
       form.reset();
     };
-
-    if (!CONTACT_SERVICE_URL) {
-      fallbackMailto();
-      return;
-    }
 
     try {
       const res = await fetch(CONTACT_SERVICE_URL, {

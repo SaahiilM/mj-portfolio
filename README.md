@@ -24,13 +24,13 @@ Use a dedicated URL per role so recruiters see tailored copy. The hero and About
 
 Add or edit roles in `src/data/roles.ts` (slug, label, headline, summary, aboutSummary). Unknown slugs 404.
 
-## Contact form (GitHub Pages compatible)
+## Contact form
 
-This project is configured for static export so it can deploy to GitHub Pages.
+The form posts to `/api/contact`, which uses [Resend](https://resend.com) to email you.
 
-- Set `NEXT_PUBLIC_CONTACT_SERVICE_URL` to a form/email endpoint that accepts JSON `POST` payloads (`name`, `email`, `message`) and responds with a 2xx status on success.
-- Optional: set `NEXT_PUBLIC_CONTACT_EMAIL` to control the fallback destination.
-- If the external service is missing or fails, the form falls back to opening a `mailto:` draft in the visitor's email app.
+1. Get an API key at [resend.com](https://resend.com).
+2. In `.env`: set `RESEND_API_KEY` and `RESEND_TO` (your inbox). Optionally set `RESEND_FROM` (default: `Portfolio <onboarding@resend.dev>` for testing; use a verified domain in production).
+3. If Resend isn’t configured or the request fails, the form falls back to a `mailto:` draft.
 
 ## Schedule a chat
 
@@ -41,10 +41,11 @@ Set `NEXT_PUBLIC_CALENDLY_URL` to your Calendly (or similar) link so the “Sche
 - Built-in dark mode toggle in the header.
 - Preference is saved in `localStorage` and defaults to the system color scheme.
 
-## Build & deploy (GitHub Pages)
+## Build & deploy
 
 ```bash
 bun run build
+bun run start
 ```
 
-Next.js generates static files in `out/` (via `output: "export"`). Publish that directory to GitHub Pages (for example with a GitHub Actions workflow).
+Deploy to any Node.js host (e.g. [Vercel](https://vercel.com), Railway, or your own server). Set the same env vars in your deployment dashboard.

@@ -95,7 +95,8 @@ export default function AdminPage() {
     <div className="space-y-6">
       {!supabaseReady && (
         <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-400">
-          Database not configured. Add <code className="rounded bg-black/10 px-1">DATABASE_URL</code> (Neon) or{" "}
+          Database not configured. Add <code className="rounded bg-black/10 px-1">DATABASE_URL</code>{" "}
+          (or <code className="rounded bg-black/10 px-1">POSTGRES_URL</code>) for Neon, or{" "}
           <code className="rounded bg-black/10 px-1">NEXT_PUBLIC_SUPABASE_URL</code> +{" "}
           <code className="rounded bg-black/10 px-1">SUPABASE_SERVICE_ROLE_KEY</code> (Supabase) to .env, then run{" "}
           <code className="rounded bg-black/10 px-1">neon-schema.sql</code> or{" "}

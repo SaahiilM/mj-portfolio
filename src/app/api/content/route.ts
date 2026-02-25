@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         error:
-          "No database configured. Add DATABASE_URL (Neon) or NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (Supabase) to .env",
+          "No database configured. Add DATABASE_URL (or POSTGRES_URL) for Neon, or NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY for Supabase in .env",
       },
       { status: 503 }
     );

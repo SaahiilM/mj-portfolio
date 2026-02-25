@@ -17,6 +17,7 @@ export type EducationItem = {
   school: string;
   location: string;
   degree: string;
+  period?: string;
   detail: string;
 };
 
@@ -73,7 +74,8 @@ export const EDUCATION: EducationItem = {
   school: "Fordham University, Gabelli School of Business",
   location: "New York, NY",
   degree: "MBA, Marketing & Information Systems",
-  detail: "Jul 2024 – Present · Dean's Scholarship Recipient",
+  period: "Jul 2024 – Present",
+  detail: "Dean's Scholarship Recipient",
 };
 
 export function getExperienceByIds(ids: string[]): ExperienceItem[] {

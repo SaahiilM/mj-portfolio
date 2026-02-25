@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Maitreyee Jaiswal | MBA Candidate, Marketing & Operations",
+  title: "Maitreyee Jaiswal",
   description:
     "Detail-oriented MBA candidate with experience in reporting, documentation, and process-driven initiatives across marketing and operations. Open to roles starting May 2026.",
   openGraph: {
@@ -46,7 +47,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground`}
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

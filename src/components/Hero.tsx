@@ -3,13 +3,15 @@ import type { RoleProfile } from "@/data/roles";
 type HeroProps = {
   profile?: RoleProfile | null;
   basePath?: string;
+  /** Override display name when using editable content */
+  name?: string;
 };
 
 const DEFAULT_BADGE = "MBA Candidate · Graduating May 2026";
 const DEFAULT_HEADLINE =
   "Marketing & Operations professional focused on reporting, documentation, and process improvement. Data-driven, detail-oriented, and ready to contribute from day one.";
 
-export function Hero({ profile, basePath = "" }: HeroProps) {
+export function Hero({ profile, basePath = "", name }: HeroProps) {
   const badge = profile?.badge ?? DEFAULT_BADGE;
   const headline = profile?.headline ?? DEFAULT_HEADLINE;
 
@@ -20,7 +22,7 @@ export function Hero({ profile, basePath = "" }: HeroProps) {
           {badge}
         </p>
         <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-          Maitreyee Jaiswal
+          {name ?? "Maitreyee Jaiswal"}
         </h1>
         <p className="mb-8 max-w-xl text-lg text-muted sm:text-xl">
           {headline}

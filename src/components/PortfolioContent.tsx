@@ -1,4 +1,6 @@
 import type { RoleProfile } from "@/data/roles";
+import type { PortfolioContent } from "@/lib/content-types";
+import { getSectionContentForRole } from "@/lib/content";
 import { getContentForRole } from "@/data/content";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
@@ -11,45 +13,70 @@ import { ContactForm } from "@/components/ContactForm";
 import { ScheduleCta } from "@/components/ScheduleCta";
 import { defaultProfile } from "@/data/roles";
 
-const DEFAULT_ABOUT =
-  "Detail-oriented MBA candidate with experience supporting reporting, documentation, and process-driven initiatives across marketing and operations. I focus on analyzing data accurately, managing quality checks, and working across stakeholders while maintaining high standards of integrity, compliance, and accountability.";
-
 type PortfolioContentProps = {
   profile?: RoleProfile | null;
   basePath?: string;
+  /** When provided, overrides static content (from admin edits) */
+  editableContent?: PortfolioContent | null;
 };
 
 export function PortfolioContent({
   profile,
   basePath = "",
+  editableContent,
 }: PortfolioContentProps) {
-  const aboutSummary =
-    profile?.aboutSummary ?? profile?.summary ?? DEFAULT_ABOUT;
-  const content = getContentForRole(profile ?? null);
+  const useEditable = editableContent != null;
+  const sectionContent = useEditable
+    ? getSectionContentForRole(editableContent, profile?.slug ?? null)
+    : getContentForRole(profile ?? null);
+
+  const heroProfile = useEditable
+    ? {
+        badge: sectionContent.profile.badge,
+        headline: sectionContent.profile.headline,
+      }
+    : profile ?? defaultProfile;
+
+  const aboutSummary = useEditable
+    ? sectionContent.profile.aboutSummary
+    : profile?.aboutSummary ?? profile?.summary ?? "Detail-oriented MBA candidate with experience supporting reporting, documentation, and process-driven initiatives across marketing and operations.";
+
+  const heroName = useEditable ? sectionContent.profile.name : "Maitreyee Jaiswal";
 
   return (
     <div className="min-h-screen">
       <Header basePath={basePath} />
       <main>
-        <Hero profile={profile ?? defaultProfile} basePath={basePath} />
+        <Hero
+          profile={heroProfile}
+          basePath={basePath}
+          name={heroName}
+        />
         <Section id="about" title="About">
-          <p className="max-w-2xl text-base leading-relaxed text-foreground sm:text-lg">
-            {aboutSummary}
-          </p>
+          {useEditable && aboutSummary?.startsWith("<") ? (
+            <div
+              className="max-w-2xl text-base leading-relaxed text-foreground sm:text-lg [&_ul]:list-disc [&_ul]:pl-6 [&_li]:my-1"
+              dangerouslySetInnerHTML={{ __html: aboutSummary }}
+            />
+          ) : (
+            <p className="max-w-2xl text-base leading-relaxed text-foreground sm:text-lg">
+              {aboutSummary}
+            </p>
+          )}
         </Section>
         <Section id="experience" title="Experience">
-          <Experience jobs={content.experience} />
+          <Experience jobs={sectionContent.experience} />
         </Section>
         <Section id="education" title="Education">
-          <Education education={content.education} />
+          <Education education={sectionContent.education} />
         </Section>
-        {content.projects.length > 0 && (
+        {sectionContent.projects.length > 0 && (
           <Section id="academic" title="Academic & Project Experience">
-            <Project projects={content.projects} />
+            <Project projects={sectionContent.projects} />
           </Section>
         )}
         <Section id="skills" title="Skills">
-          <Skills skills={content.skills} />
+          <Skills skills={sectionContent.skills} />
         </Section>
         <Section id="contact" title="Contact">
           <div className="space-y-8">

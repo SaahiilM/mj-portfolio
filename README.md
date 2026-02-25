@@ -34,7 +34,17 @@ The form posts to `/api/contact`, which uses [Resend](https://resend.com) to ema
 
 ## Schedule a chat
 
-Set `NEXT_PUBLIC_CALENDLY_URL` to your Calendly (or similar) link so the “Schedule a chat” button points there.
+Set `NEXT_PUBLIC_CALENDLY_URL` to your Cal.com event URL (e.g. https://cal.com/username/30min) so the “Schedule a chat” button points there.
+
+## Admin (edit portfolio content)
+
+Visit `/admin` to edit Hero, About, Experience, Education, Projects, Skills, and role-specific content.
+
+1. **Auth**: Set `ADMIN_PASSWORD` and `AUTH_SECRET` (run `openssl rand -base64 32`) in `.env`.
+2. **Storage**: Use one of:
+   - **[Neon](https://neon.tech)** (recommended): Create project, run `neon-schema.sql` in SQL Editor, add `DATABASE_URL` to `.env`
+   - **[Supabase](https://supabase.com)**: Create project, run `supabase-schema.sql` in SQL Editor, add `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to `.env`
+3. Without Supabase, the admin shows content but cannot save.
 
 ## Theme
 

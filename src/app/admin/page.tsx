@@ -24,14 +24,16 @@ export default function AdminPage() {
   const [activeRole, setActiveRole] = useState("");
   const [activeSection, setActiveSection] = useState<Section>("hero");
   const [supabaseReady, setSupabaseReady] = useState(true);
+  const [dbProvider, setDbProvider] = useState<"neon" | "supabase" | null>(null);
 
   useEffect(() => {
     fetch("/api/content")
       .then((r) => r.json())
       .then((data) => {
-        const { _hasSupabase, ...rest } = data;
+        const { _hasSupabase, _dbProvider, ...rest } = data;
         setContent(rest);
         setSupabaseReady(!!_hasSupabase);
+        setDbProvider((_dbProvider as "neon" | "supabase" | null) ?? null);
       })
       .catch(() => setContent(null))
       .finally(() => setLoading(false));
@@ -40,21 +42,26 @@ export default function AdminPage() {
   async function save(partial: Partial<PortfolioContent>) {
     setSaving(true);
     setMessage(null);
-    const res = await fetch("/api/content", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(partial),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setMessage({ type: "error", text: data.error ?? "Failed to save" });
+    try {
+      const res = await fetch("/api/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(partial),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error ?? `Failed to save (${res.status})` });
+        return;
+      }
+      setContent((prev) => (prev ? { ...prev, ...partial } : null));
+      setMessage({ type: "ok", text: "Saved" });
+      setTimeout(() => setMessage(null), 2000);
+    } catch {
+      setMessage({ type: "error", text: "Network error while saving. Check deployment logs and database env vars." });
+    } finally {
       setSaving(false);
-      return;
     }
-    setContent((prev) => (prev ? { ...prev, ...partial } : null));
-    setMessage({ type: "ok", text: "Saved" });
-    setSaving(false);
-    setTimeout(() => setMessage(null), 2000);
   }
 
   function saveRoleOverride(slug: string, override: Partial<RoleOverride>) {
@@ -71,7 +78,6 @@ export default function AdminPage() {
 
   const sectionContent = getSectionContentForRole(content, activeRole || null);
   const isDefault = !activeRole;
-  const currentRole = activeRole ? content.roles?.[activeRole] : null;
 
   const roleOptions = [
     { value: "", label: "Default" },
@@ -108,6 +114,7 @@ export default function AdminPage() {
           {message.text}
         </p>
       )}
+      <p className="text-xs text-muted">Detected storage provider: <strong>{dbProvider ?? "none"}</strong></p>
 
       <div className="rounded-xl border border-border bg-card p-4">
         <label className="mb-2 block text-sm font-medium text-foreground">Editing for</label>

@@ -16,26 +16,27 @@ const SUPABASE_KEY =
 /** Use Neon if DATABASE_URL is set, else Supabase if configured */
 export type DbProvider = "neon" | "supabase" | null;
 
-const provider: DbProvider = DATABASE_URL ? "neon" : SUPABASE_URL && SUPABASE_KEY ? "supabase" : null;
+export const dbProvider: DbProvider =
+  DATABASE_URL ? "neon" : SUPABASE_URL && SUPABASE_KEY ? "supabase" : null;
 
-export const hasDb = !!provider;
+export const hasDb = !!dbProvider;
 
 const supabase =
-  provider === "supabase" && SUPABASE_URL && SUPABASE_KEY
+  dbProvider === "supabase" && SUPABASE_URL && SUPABASE_KEY
     ? createClient(SUPABASE_URL, SUPABASE_KEY)
     : null;
 
 export async function getStoredContent(): Promise<Partial<PortfolioContent> | null> {
-  if (!provider) return null;
+  if (!dbProvider) return null;
 
-  if (provider === "neon" && DATABASE_URL) {
+  if (dbProvider === "neon" && DATABASE_URL) {
     const sql = neon(DATABASE_URL);
     const rows = await sql`SELECT data FROM portfolio_content WHERE id = ${ROW_ID} LIMIT 1`;
     const row = rows[0] as { data: Partial<PortfolioContent> } | undefined;
     return row?.data ?? null;
   }
 
-  if (provider === "supabase" && supabase) {
+  if (dbProvider === "supabase" && supabase) {
     const { data } = await supabase
       .from("portfolio_content")
       .select("data")
@@ -48,11 +49,11 @@ export async function getStoredContent(): Promise<Partial<PortfolioContent> | nu
 }
 
 export async function saveContent(data: PortfolioContent): Promise<{ error?: string }> {
-  if (!provider) {
+  if (!dbProvider) {
     return { error: "No database configured" };
   }
 
-  if (provider === "neon" && DATABASE_URL) {
+  if (dbProvider === "neon" && DATABASE_URL) {
     try {
       const sql = neon(DATABASE_URL);
       await sql`
@@ -68,7 +69,7 @@ export async function saveContent(data: PortfolioContent): Promise<{ error?: str
     }
   }
 
-  if (provider === "supabase" && supabase) {
+  if (dbProvider === "supabase" && supabase) {
     const { error } = await supabase
       .from("portfolio_content")
       .upsert(

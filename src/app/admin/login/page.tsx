@@ -7,22 +7,30 @@ import { useSearchParams } from "next/navigation";
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [authenticating, setAuthenticating] = useState(false);
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/admin";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (authenticating) return;
     setError("");
-    const res = await signIn("credentials", {
-      password,
-      redirect: false,
-      callbackUrl,
-    });
-    if (res?.error) {
-      setError("Invalid password");
-      return;
+    setAuthenticating(true);
+
+    try {
+      const res = await signIn("credentials", {
+        password,
+        redirect: false,
+        callbackUrl,
+      });
+      if (res?.error) {
+        setError("Invalid password");
+        return;
+      }
+      if (res?.ok) window.location.href = callbackUrl;
+    } finally {
+      setAuthenticating(false);
     }
-    if (res?.ok) window.location.href = callbackUrl;
   }
 
   return (
@@ -47,9 +55,10 @@ export default function AdminLoginPage() {
           {error && <p className="text-sm text-red-500">{error}</p>}
           <button
             type="submit"
+            disabled={authenticating}
             className="w-full rounded-full bg-accent py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
           >
-            Sign in
+            {authenticating ? "Authenticating…" : "Sign in"}
           </button>
         </form>
       </div>

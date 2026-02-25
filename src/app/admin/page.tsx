@@ -44,6 +44,7 @@ export default function AdminPage() {
     setSaving(true);
     setMessage(null);
     setSaveProgressText("Saving changes to database…");
+    setSaveProgressText("Saving changes to database…");
     try {
       const res = await fetch("/api/content", {
         method: "POST",
@@ -54,6 +55,7 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setMessage({ type: "error", text: data.error ?? `Failed to save (${res.status})` });
+        setSaveProgressText(null);
         setSaveProgressText(null);
         return;
       }

@@ -2,70 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getStoredContent, saveContent, hasDb } from "@/lib/db";
 import type { PortfolioContent } from "@/lib/content-types";
-import {
-  EXPERIENCE,
-  PROJECTS,
-  EDUCATION,
-  SKILLS_LIST,
-} from "@/data/content";
-import { defaultProfile, getRoleProfile, getAllRoleSlugs } from "@/data/roles";
-
-function getStaticContent(): PortfolioContent {
-  const roles: Record<string, NonNullable<ReturnType<typeof getRoleProfile>>> = {};
-  for (const slug of getAllRoleSlugs()) {
-    const p = getRoleProfile(slug);
-    if (p) roles[slug] = p;
-  }
-  return {
-    hero: {
-      name: "Maitreyee Jaiswal",
-      badge: defaultProfile.badge ?? "",
-      headline: defaultProfile.headline ?? "",
-    },
-    about: { summary: defaultProfile.aboutSummary ?? defaultProfile.summary ?? "" },
-    experience: EXPERIENCE,
-    projects: PROJECTS,
-    education: [EDUCATION],
-    skills: SKILLS_LIST,
-    roles: Object.fromEntries(
-      Object.entries(roles).map(([k, v]) => [
-        k,
-        {
-          label: v.label,
-          badge: v.badge,
-          headline: v.headline,
-          summary: v.summary,
-          aboutSummary: v.aboutSummary,
-          experienceOrder: v.experienceOrder,
-          skillsOrder: v.skillsOrder,
-          projectOrder: v.projectOrder,
-        },
-      ])
-    ),
-  };
-}
-
-function mergeContent(
-  staticContent: PortfolioContent,
-  stored: Partial<PortfolioContent> | null
-): PortfolioContent {
-  if (!stored) return staticContent;
-  return {
-    hero: { ...staticContent.hero, ...stored.hero } as PortfolioContent["hero"],
-    about: { ...staticContent.about, ...stored.about } as PortfolioContent["about"],
-    experience: stored.experience ?? staticContent.experience,
-    projects: stored.projects ?? staticContent.projects,
-    education: stored.education !== undefined
-      ? Array.isArray(stored.education)
-        ? stored.education
-        : [stored.education]
-      : staticContent.education,
-    skills: stored.skills ?? staticContent.skills,
-    roles: stored.roles
-      ? { ...staticContent.roles, ...stored.roles }
-      : staticContent.roles,
-  };
-}
+import { getStaticContent, mergeContent } from "@/lib/content";
 
 export async function GET() {
   const staticContent = getStaticContent();

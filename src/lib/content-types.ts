@@ -50,4 +50,6 @@ export type PortfolioContent = {
   education?: EducationItem | EducationItem[];
   skills?: string[];
   roles?: Record<string, RoleOverride>;
+  /** Maps old slug → new slug for URLs already shared (301 redirects) */
+  roleRedirects?: Record<string, string>;
 };

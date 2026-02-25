@@ -1,5 +1,4 @@
-import { getStoredContent } from "./db";
-import type { PortfolioContent } from "./content-types";
+import type { PortfolioContent, RoleOverride } from "./content-types";
 import {
   EXPERIENCE,
   PROJECTS,
@@ -7,8 +6,9 @@ import {
   SKILLS_LIST,
 } from "@/data/content";
 import { defaultProfile, getRoleProfile, getAllRoleSlugs } from "@/data/roles";
+import type { RoleProfile } from "@/data/roles";
 
-function getStaticContent(): PortfolioContent {
+export function getStaticContent(): PortfolioContent {
   const roles: Record<string, NonNullable<ReturnType<typeof getRoleProfile>>> = {};
   for (const slug of getAllRoleSlugs()) {
     const p = getRoleProfile(slug);
@@ -43,7 +43,7 @@ function getStaticContent(): PortfolioContent {
   };
 }
 
-function mergeContent(
+export function mergeContent(
   staticContent: PortfolioContent,
   stored: Partial<PortfolioContent> | null
 ): PortfolioContent {
@@ -59,16 +59,9 @@ function mergeContent(
         : [stored.education]
       : staticContent.education,
     skills: stored.skills ?? staticContent.skills,
-    roles: stored.roles
-      ? { ...staticContent.roles, ...stored.roles }
-      : staticContent.roles,
+    roles: stored?.roles ?? staticContent.roles,
+    roleRedirects: { ...staticContent.roleRedirects, ...stored?.roleRedirects },
   };
-}
-
-export async function getPortfolioContent(): Promise<PortfolioContent> {
-  const staticContent = getStaticContent();
-  const stored = await getStoredContent();
-  return mergeContent(staticContent, stored);
 }
 
 export type SectionContent = {
@@ -144,4 +137,34 @@ export function getSectionContentForRole(
     education,
     profile,
   };
+}
+
+/** Build RoleProfile from content.roles[slug] for dynamic roles */
+export function contentToRoleProfile(
+  slug: string,
+  roleOverride: RoleOverride,
+  content: PortfolioContent
+): RoleProfile {
+  const defaultProfileData = {
+    badge: content.hero?.badge ?? defaultProfile.badge ?? "",
+    headline: content.hero?.headline ?? defaultProfile.headline ?? "",
+    summary: content.about?.summary ?? defaultProfile.summary ?? "",
+  };
+  const label = roleOverride.label || slug.replace(/-/g, " ");
+  return {
+    slug: slug.toLowerCase().trim(),
+    label,
+    badge: roleOverride.badge ?? defaultProfileData.badge,
+    headline: roleOverride.headline ?? defaultProfileData.headline,
+    summary: roleOverride.summary ?? defaultProfileData.summary,
+    aboutSummary: roleOverride.aboutSummary ?? roleOverride.summary ?? defaultProfileData.summary,
+    experienceOrder: roleOverride.experienceOrder,
+    skillsOrder: roleOverride.skillsOrder,
+    projectOrder: roleOverride.projectOrder,
+  };
+}
+
+/** Get all role slugs from merged content (used for routing) */
+export function getAllRoleSlugsFromContent(content: PortfolioContent): string[] {
+  return Object.keys(content?.roles ?? {});
 }

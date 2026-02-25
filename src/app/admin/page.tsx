@@ -6,14 +6,15 @@ import type { RoleOverride } from "@/lib/content-types";
 import { getSectionContentForRole } from "@/lib/content";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
-const ROLE_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "Default" },
-  { value: "marketing-manager", label: "Marketing Manager" },
-  { value: "product-manager", label: "Product Manager" },
-  { value: "operations", label: "Operations" },
-];
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
 
-type Section = "hero" | "about" | "experience" | "education" | "projects" | "skills";
+type Section = "hero" | "about" | "experience" | "education" | "projects" | "skills" | "roles";
 
 export default function AdminPage() {
   const [content, setContent] = useState<PortfolioContent | null>(null);
@@ -72,6 +73,14 @@ export default function AdminPage() {
   const isDefault = !activeRole;
   const currentRole = activeRole ? content.roles?.[activeRole] : null;
 
+  const roleOptions = [
+    { value: "", label: "Default" },
+    ...Object.entries(content?.roles ?? {}).map(([slug, r]) => ({
+      value: slug,
+      label: r.label || slug.replace(/-/g, " "),
+    })),
+  ];
+
   const sections: { id: Section; label: string }[] = [
     { id: "hero", label: "Hero" },
     { id: "about", label: "About" },
@@ -79,6 +88,7 @@ export default function AdminPage() {
     { id: "education", label: "Education" },
     { id: "projects", label: "Projects" },
     { id: "skills", label: "Skills" },
+    { id: "roles", label: "Roles" },
   ];
 
   return (
@@ -101,7 +111,7 @@ export default function AdminPage() {
       <div className="rounded-xl border border-border bg-card p-4">
         <label className="mb-2 block text-sm font-medium text-foreground">Editing for</label>
         <div className="flex flex-wrap gap-2">
-          {ROLE_OPTIONS.map((opt) => (
+          {roleOptions.map((opt) => (
             <button
               key={opt.value || "default"}
               type="button"
@@ -218,7 +228,221 @@ export default function AdminPage() {
           saving={saving}
         />
       )}
+
+      {activeSection === "roles" && (
+        <RolesForm
+          roles={content.roles ?? {}}
+          roleRedirects={content.roleRedirects ?? {}}
+          onSave={(updates) => save(updates)}
+          saving={saving}
+          activeRole={activeRole}
+          onRoleChange={(slug) => {
+            setActiveRole(slug);
+            setActiveSection("hero");
+          }}
+          onRoleRemoved={(slug) => {
+            if (activeRole === slug) setActiveRole("");
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function RolesForm({
+  roles,
+  roleRedirects,
+  onSave,
+  saving,
+  activeRole,
+  onRoleChange,
+  onRoleRemoved,
+}: {
+  roles: Record<string, RoleOverride>;
+  roleRedirects: Record<string, string>;
+  onSave: (updates: Partial<PortfolioContent>) => void;
+  saving: boolean;
+  activeRole: string;
+  onRoleChange: (slug: string) => void;
+  onRoleRemoved: (slug: string) => void;
+}) {
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const [newLabel, setNewLabel] = useState("");
+  const [addMode, setAddMode] = useState(false);
+
+  const entries = Object.entries(roles);
+
+  function addRole() {
+    const slug = slugify(newLabel) || `role-${Date.now()}`;
+    if (!slug) return;
+    if (roles[slug]) {
+      setNewLabel("");
+      setAddMode(false);
+      return;
+    }
+    const updated = {
+      ...roles,
+      [slug]: {
+        label: newLabel.trim() || slug.replace(/-/g, " "),
+        headline: "",
+        summary: "",
+      },
+    };
+    onSave({ roles: updated });
+    setNewLabel("");
+    setAddMode(false);
+    onRoleChange(slug);
+  }
+
+  function removeRole(slug: string) {
+    if (!confirm(`Remove role "${roles[slug]?.label ?? slug}"? This cannot be undone.`)) return;
+    const updated = { ...roles };
+    delete updated[slug];
+    onSave({ roles: updated });
+    if (editingSlug === slug) setEditingSlug(null);
+    onRoleRemoved(slug);
+  }
+
+  function renameRole(oldSlug: string, newSlug: string, newLabel: string) {
+    const labelChanged = (roles[oldSlug]?.label ?? oldSlug.replace(/-/g, " ")) !== newLabel;
+    const slugChanged = oldSlug !== newSlug;
+    if (!labelChanged && !slugChanged) {
+      setEditingSlug(null);
+      return;
+    }
+    const updated = { ...roles };
+    const data = updated[oldSlug] ?? { label: oldSlug.replace(/-/g, " "), headline: "", summary: "" };
+    delete updated[oldSlug];
+    updated[newSlug] = { ...data, label: newLabel.trim() || newSlug.replace(/-/g, " ") };
+
+    // Preserve old URLs: anyone with /p/old-slug gets 308 → /p/new-slug
+    const redirects = { ...roleRedirects };
+    if (slugChanged) {
+      redirects[oldSlug] = newSlug;
+      // Update any redirects pointing to oldSlug to point to newSlug
+      for (const [from, to] of Object.entries(redirects)) {
+        if (to === oldSlug) redirects[from] = newSlug;
+      }
+    }
+    onSave({ roles: updated, roleRedirects: redirects });
+    setEditingSlug(null);
+    if (activeRole === oldSlug) onRoleChange(newSlug);
+  }
+
+  return (
+    <FormSection title="Roles">
+      <p className="mb-4 text-sm text-muted">
+        Add, remove, or edit role names. Each role has its own URL: <code className="rounded bg-muted px-1">/p/[slug]</code>
+        {" "}Old URLs redirect automatically when you rename a role, so shared links keep working.
+      </p>
+      <div className="space-y-3">
+        {entries.map(([slug, r]) => (
+          <div
+            key={slug}
+            className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-4"
+          >
+            {editingSlug === slug ? (
+              <>
+                <input
+                  type="text"
+                  placeholder="Label"
+                  defaultValue={r.label || slug.replace(/-/g, " ")}
+                  id={`edit-label-${slug}`}
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                />
+                <input
+                  type="text"
+                  placeholder="URL slug"
+                  defaultValue={slug}
+                  id={`edit-slug-${slug}`}
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-foreground font-mono text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const labelEl = document.getElementById(`edit-label-${slug}`) as HTMLInputElement;
+                    const slugEl = document.getElementById(`edit-slug-${slug}`) as HTMLInputElement;
+                    const newLabel = labelEl?.value?.trim() || slug.replace(/-/g, " ");
+                    const newSlug = slugify(slugEl?.value || slug) || slug;
+                    if (newSlug !== slug && roles[newSlug]) {
+                      alert(`Slug "${newSlug}" already exists. Choose a different URL.`);
+                      return;
+                    }
+                    renameRole(slug, newSlug, newLabel);
+                  }}
+                  disabled={saving}
+                  className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-60"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingSlug(null)}
+                  className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-foreground/5"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="font-medium">{r.label || slug.replace(/-/g, " ")}</span>
+                <code className="rounded bg-muted px-2 py-0.5 text-xs">/p/{slug}</code>
+                <button
+                  type="button"
+                  onClick={() => setEditingSlug(slug)}
+                  className="text-sm text-accent hover:underline"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeRole(slug)}
+                  className="text-sm text-red-500 hover:text-red-600"
+                >
+                  Remove
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+        {addMode ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border border-dashed p-4">
+            <input
+              type="text"
+              placeholder="Role label (e.g. Marketing Manager)"
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addRole()}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={addRole}
+              disabled={saving || !newLabel.trim()}
+              className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-60"
+            >
+              Add
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAddMode(false); setNewLabel(""); }}
+              className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-foreground/5"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAddMode(true)}
+            className="rounded-full border border-accent bg-transparent px-4 py-2 text-sm font-medium text-accent hover:bg-accent/10"
+          >
+            + Add role
+          </button>
+        )}
+      </div>
+    </FormSection>
   );
 }
 

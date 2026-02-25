@@ -1,4 +1,4 @@
-import { getPortfolioContent } from "@/lib/content";
+import { getPortfolioContent } from "@/lib/content-server";
 import { PortfolioContent } from "@/components/PortfolioContent";
 
 export default async function Home() {

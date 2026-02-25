@@ -1,8 +1,11 @@
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getStoredContent, saveContent, hasDb } from "@/lib/db";
 import type { PortfolioContent } from "@/lib/content-types";
 import { getStaticContent, mergeContent } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const staticContent = getStaticContent();
@@ -36,5 +39,9 @@ export async function POST(request: Request) {
   if (error) {
     return Response.json({ error }, { status: 500 });
   }
+
+  revalidatePath("/");
+  revalidatePath("/p/[role]", "page");
+
   return Response.json({ ok: true });
 }

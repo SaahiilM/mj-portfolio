@@ -21,17 +21,20 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
+  const [saveProgressText, setSaveProgressText] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState("");
   const [activeSection, setActiveSection] = useState<Section>("hero");
   const [supabaseReady, setSupabaseReady] = useState(true);
+  const [dbProvider, setDbProvider] = useState<"neon" | "supabase" | null>(null);
 
   useEffect(() => {
     fetch("/api/content")
       .then((r) => r.json())
       .then((data) => {
-        const { _hasSupabase, ...rest } = data;
+        const { _hasSupabase, _dbProvider, ...rest } = data;
         setContent(rest);
         setSupabaseReady(!!_hasSupabase);
+        setDbProvider((_dbProvider as "neon" | "supabase" | null) ?? null);
       })
       .catch(() => setContent(null))
       .finally(() => setLoading(false));
@@ -40,21 +43,33 @@ export default function AdminPage() {
   async function save(partial: Partial<PortfolioContent>) {
     setSaving(true);
     setMessage(null);
-    const res = await fetch("/api/content", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(partial),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setMessage({ type: "error", text: data.error ?? "Failed to save" });
+    setSaveProgressText("Saving changes to database…");
+    try {
+      const res = await fetch("/api/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(partial),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error ?? `Failed to save (${res.status})` });
+        setSaveProgressText(null);
+        return;
+      }
+      setContent((prev) => (prev ? { ...prev, ...partial } : null));
+      setMessage({ type: "ok", text: "Saved" });
+      setSaveProgressText("Saved successfully");
+      setTimeout(() => {
+        setMessage(null);
+        setSaveProgressText(null);
+      }, 2000);
+    } catch {
+      setMessage({ type: "error", text: "Network error while saving. Check deployment logs and database env vars." });
+      setSaveProgressText(null);
+    } finally {
       setSaving(false);
-      return;
     }
-    setContent((prev) => (prev ? { ...prev, ...partial } : null));
-    setMessage({ type: "ok", text: "Saved" });
-    setSaving(false);
-    setTimeout(() => setMessage(null), 2000);
   }
 
   function saveRoleOverride(slug: string, override: Partial<RoleOverride>) {
@@ -71,7 +86,6 @@ export default function AdminPage() {
 
   const sectionContent = getSectionContentForRole(content, activeRole || null);
   const isDefault = !activeRole;
-  const currentRole = activeRole ? content.roles?.[activeRole] : null;
 
   const roleOptions = [
     { value: "", label: "Default" },
@@ -95,7 +109,8 @@ export default function AdminPage() {
     <div className="space-y-6">
       {!supabaseReady && (
         <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-400">
-          Database not configured. Add <code className="rounded bg-black/10 px-1">DATABASE_URL</code> (Neon) or{" "}
+          Database not configured. Add <code className="rounded bg-black/10 px-1">DATABASE_URL</code>{" "}
+          (or <code className="rounded bg-black/10 px-1">POSTGRES_URL</code>) for Neon, or{" "}
           <code className="rounded bg-black/10 px-1">NEXT_PUBLIC_SUPABASE_URL</code> +{" "}
           <code className="rounded bg-black/10 px-1">SUPABASE_SERVICE_ROLE_KEY</code> (Supabase) to .env, then run{" "}
           <code className="rounded bg-black/10 px-1">neon-schema.sql</code> or{" "}
@@ -107,6 +122,13 @@ export default function AdminPage() {
           {message.text}
         </p>
       )}
+      {saveProgressText && (
+        <div className="flex items-center gap-2 text-sm text-muted">
+          {saving && <span className="inline-block size-3 animate-spin rounded-full border-2 border-muted border-t-accent" />}
+          <span>{saveProgressText}</span>
+        </div>
+      )}
+      <p className="text-xs text-muted">Detected storage provider: <strong>{dbProvider ?? "none"}</strong></p>
 
       <div className="rounded-xl border border-border bg-card p-4">
         <label className="mb-2 block text-sm font-medium text-foreground">Editing for</label>

@@ -43,7 +43,10 @@ export default function AdminPage() {
   async function save(partial: Partial<PortfolioContent>) {
     setSaving(true);
     setMessage(null);
+<<<<<<< codex/fix-save-button-requests-to-database-vngj63
     setSaveProgressText("Saving changes to database…");
+=======
+>>>>>>> main
     try {
       const res = await fetch("/api/content", {
         method: "POST",
@@ -54,11 +57,15 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setMessage({ type: "error", text: data.error ?? `Failed to save (${res.status})` });
+<<<<<<< codex/fix-save-button-requests-to-database-vngj63
         setSaveProgressText(null);
+=======
+>>>>>>> main
         return;
       }
       setContent((prev) => (prev ? { ...prev, ...partial } : null));
       setMessage({ type: "ok", text: "Saved" });
+<<<<<<< codex/fix-save-button-requests-to-database-vngj63
       setSaveProgressText("Saved successfully");
       setTimeout(() => {
         setMessage(null);
@@ -67,6 +74,11 @@ export default function AdminPage() {
     } catch {
       setMessage({ type: "error", text: "Network error while saving. Check deployment logs and database env vars." });
       setSaveProgressText(null);
+=======
+      setTimeout(() => setMessage(null), 2000);
+    } catch {
+      setMessage({ type: "error", text: "Network error while saving. Check deployment logs and database env vars." });
+>>>>>>> main
     } finally {
       setSaving(false);
     }
@@ -122,12 +134,15 @@ export default function AdminPage() {
           {message.text}
         </p>
       )}
+<<<<<<< codex/fix-save-button-requests-to-database-vngj63
       {saveProgressText && (
         <div className="flex items-center gap-2 text-sm text-muted">
           {saving && <span className="inline-block size-3 animate-spin rounded-full border-2 border-muted border-t-accent" />}
           <span>{saveProgressText}</span>
         </div>
       )}
+=======
+>>>>>>> main
       <p className="text-xs text-muted">Detected storage provider: <strong>{dbProvider ?? "none"}</strong></p>
 
       <div className="rounded-xl border border-border bg-card p-4">

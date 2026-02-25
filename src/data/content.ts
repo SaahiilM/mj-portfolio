@@ -98,16 +98,34 @@ export type SectionContent = {
   experience: ExperienceItem[];
   skills: string[];
   projects: ProjectItem[];
-  education: EducationItem;
+  education: EducationItem[];
+  profile: {
+    name: string;
+    badge: string;
+    headline: string;
+    aboutSummary: string;
+  };
 };
 
 export function getContentForRole(profile: {
   experienceOrder?: string[];
   skillsOrder?: string[];
   projectOrder?: string[];
+  badge?: string;
+  headline?: string;
+  summary?: string;
+  aboutSummary?: string;
 } | null): SectionContent {
   const defaultExpIds = EXPERIENCE.map((e) => e.id);
   const defaultProjIds = PROJECTS.map((p) => p.id);
+  const defaultProfile = {
+    name: "Maitreyee Jaiswal",
+    badge: "MBA Candidate · Graduating May 2026",
+    headline:
+      "Marketing & Operations professional focused on reporting, documentation, and process improvement. Data-driven, detail-oriented, and ready to contribute from day one.",
+    aboutSummary:
+      "Detail-oriented MBA candidate with experience supporting reporting, documentation, and process-driven initiatives across marketing and operations. I focus on analyzing data accurately, managing quality checks, and working across stakeholders while maintaining high standards of integrity, compliance, and accountability.",
+  };
 
   return {
     experience: getExperienceByIds(
@@ -117,6 +135,14 @@ export function getContentForRole(profile: {
     projects: getProjectsByIds(
       profile?.projectOrder?.length ? profile.projectOrder : defaultProjIds
     ),
-    education: EDUCATION,
+    education: [EDUCATION],
+    profile: profile
+      ? {
+          name: defaultProfile.name,
+          badge: profile.badge ?? defaultProfile.badge,
+          headline: profile.headline ?? defaultProfile.headline,
+          aboutSummary: profile.aboutSummary ?? profile.summary ?? defaultProfile.aboutSummary,
+        }
+      : defaultProfile,
   };
 }

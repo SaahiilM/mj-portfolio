@@ -32,7 +32,7 @@ export function RichTextEditor({ value, onChange, placeholder, className = "" }:
 
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value, false);
+      editor.commands.setContent(value, { emitUpdate: false });
     }
   }, [value, editor]);
 
@@ -46,7 +46,9 @@ export function RichTextEditor({ value, onChange, placeholder, className = "" }:
   useEffect(() => {
     if (editor) {
       editor.on("update", handleUpdate);
-      return () => editor.off("update", handleUpdate);
+      return () => {
+        editor.off("update", handleUpdate);
+      };
     }
   }, [editor, handleUpdate]);
 

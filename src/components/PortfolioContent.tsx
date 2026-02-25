@@ -31,10 +31,7 @@ export function PortfolioContent({
     : getContentForRole(profile ?? null);
 
   const heroProfile = useEditable
-    ? {
-        badge: sectionContent.profile.badge,
-        headline: sectionContent.profile.headline,
-      }
+    ? ({ ...defaultProfile, ...sectionContent.profile } as RoleProfile)
     : profile ?? defaultProfile;
 
   const aboutSummary = useEditable
@@ -65,18 +62,18 @@ export function PortfolioContent({
           )}
         </Section>
         <Section id="experience" title="Experience">
-          <Experience jobs={sectionContent.experience} />
+          <Experience jobs={sectionContent.experience ?? []} />
         </Section>
         <Section id="education" title="Education">
-          <Education education={sectionContent.education} />
+          <Education education={sectionContent.education ?? []} />
         </Section>
-        {sectionContent.projects.length > 0 && (
+        {(sectionContent.projects?.length ?? 0) > 0 && (
           <Section id="academic" title="Academic & Project Experience">
-            <Project projects={sectionContent.projects} />
+            <Project projects={sectionContent.projects ?? []} />
           </Section>
         )}
         <Section id="skills" title="Skills">
-          <Skills skills={sectionContent.skills} />
+          <Skills skills={sectionContent.skills ?? []} />
         </Section>
         <Section id="contact" title="Contact">
           <div className="space-y-8">

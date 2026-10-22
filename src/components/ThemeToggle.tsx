@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
 
@@ -15,26 +15,30 @@ function applyTheme(theme: Theme) {
   document.documentElement.style.colorScheme = theme;
 }
 
+function subscribe(onChange: () => void) {
+  window.addEventListener("storage", onChange);
+  window.addEventListener("themechange", onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener("themechange", onChange);
+  };
+}
+
+function getServerTheme(): Theme {
+  return "light";
+}
+
 export function ThemeToggle() {
-  // Always start with "light" so server and first client render match (avoids hydration mismatch)
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
+  const theme = useSyncExternalStore(subscribe, getThemeFromClient, getServerTheme);
 
   useEffect(() => {
-    const initial = getThemeFromClient();
-    setTheme(initial);
-    applyTheme(initial);
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted) applyTheme(theme);
-  }, [theme, mounted]);
+    applyTheme(theme);
+  }, [theme]);
 
   function toggleTheme() {
     const nextTheme = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
     window.localStorage.setItem("theme", nextTheme);
+    window.dispatchEvent(new Event("themechange"));
   }
 
   const label = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
